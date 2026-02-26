@@ -63,12 +63,13 @@ module.exports = async function trigger(params) {
       buildNumber,
       repository: workflowInfo.repository.name,
       branch: params["git-branch-name"],
+      prNumber: params["git-pr-number"],
     });
 
     return {
       buildId,
       buildNumber,
-      gitReferenceId: referenceId,
+      gitReferenceId: branchReferenceId || prReferenceId,
     };
   } catch (error) {
     console.error("❌ Error:", error.message);
