@@ -10,7 +10,7 @@ module.exports = async function trigger(params) {
       }
     }
 
-    if (!params["git-branch-name"] && !params["git-pr-number"]) {
+    if (!params["git-branch-name"] && (!params["git-pr-number"] || isNaN(parseInt(params["git-pr-number"])))) {
       throw new Error(
         "Either 'git-branch-name' or 'git-pr-number' must be provided"
       );
@@ -37,7 +37,7 @@ module.exports = async function trigger(params) {
       );
       return await client.getGitReferenceForPr(
         workflowInfo.repository.id,
-        params["git-pr-number"]
+        parseInt(params["git-pr-number"])
       );
     } else {
       console.log(
