@@ -31,11 +31,12 @@ module.exports = async function trigger(params) {
       owner: workflowInfo.repository.owner,
     });
 
+    let referenceId = 0;
     if (params["git-pr-number"]) {
       console.log(
         `🔍 Finding git reference for PR #${params["git-pr-number"]}...`
       );
-      return await client.getGitReferenceForPr(
+      referenceId = await client.getGitReferenceForPr(
         workflowInfo.repository.id,
         parseInt(params["git-pr-number"])
       );
@@ -43,9 +44,19 @@ module.exports = async function trigger(params) {
       console.log(
         `🔍 Finding git reference for branch '${params["git-branch-name"]}'...`
       );
-      const referenceId = await client.getGitReferenceForBranchName(
+      referenceId = await client.getGitReferenceForBranchName(
         workflowInfo.repository.id,
         params["git-branch-name"]
+      );
+    }
+
+    if (!referenceId) {
+      throw new Error(
+        `Git reference not found for ${
+          params["git-pr-number"]
+            ? `PR #${params["git-pr-number"]}`
+            : `branch '${params["git-branch-name"]}'`
+        }`
       );
     }
 
