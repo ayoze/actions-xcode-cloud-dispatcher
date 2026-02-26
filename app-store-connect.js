@@ -155,9 +155,9 @@ class AppStoreConnect {
     return reference.id;
   }
 
-  async createBuild(workflowId, referenceId) {
+  async createBuild(workflowId, branchReferenceId, prReferenceId) {
     if (!workflowId) throw new Error("Workflow ID is required");
-    if (!referenceId) throw new Error("Git reference ID is required");
+    if (!branchReferenceId && !prReferenceId) throw new Error("Git reference ID is required");
 
     const body = {
       data: {
@@ -166,13 +166,21 @@ class AppStoreConnect {
         relationships: {
           workflow: {
             data: { type: "ciWorkflows", id: workflowId },
-          },
-          sourceBranchOrTag: {
-            data: { type: "scmGitReferences", id: referenceId },
-          },
+          }
         },
       },
     };
+    if (branchReferenceId) {
+      // data.relationships.sourceBranchOrTag: { data: { type: "scmGitReferences", id: referenceId }, }
+      body.data.relationships.sourceBranchOrTag = {
+        data: { type: "scmGitReferences", id: branchReferenceId },
+      };
+    } else {
+      // data.relationships.pullRequest: { data: { type: "scmPullRequests", id: referenceId }, }
+      body.data.relationships.pullRequest = {
+        data: { type: "scmPullRequests", id: prReferenceId },
+      };
+    }
 
     const data = await this.request("/ciBuildRuns", {
       method: "POST",

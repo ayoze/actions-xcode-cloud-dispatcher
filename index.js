@@ -31,12 +31,14 @@ module.exports = async function trigger(params) {
       owner: workflowInfo.repository.owner,
     });
 
-    let referenceId = 0;
+    let branchReferenceId = null;
+    let prReferenceId = null;
+
     if (params["git-pr-number"]) {
       console.log(
         `🔍 Finding git reference for PR #${params["git-pr-number"]}...`
       );
-      referenceId = await client.getGitReferenceForPr(
+      prReferenceId = await client.getGitReferenceForPr(
         workflowInfo.repository.id,
         parseInt(params["git-pr-number"])
       );
@@ -44,26 +46,17 @@ module.exports = async function trigger(params) {
       console.log(
         `🔍 Finding git reference for branch '${params["git-branch-name"]}'...`
       );
-      referenceId = await client.getGitReferenceForBranchName(
+      branchReferenceId = await client.getGitReferenceForBranchName(
         workflowInfo.repository.id,
         params["git-branch-name"]
-      );
-    }
-
-    if (!referenceId) {
-      throw new Error(
-        `Git reference not found for ${
-          params["git-pr-number"]
-            ? `PR #${params["git-pr-number"]}`
-            : `branch '${params["git-branch-name"]}'`
-        }`
       );
     }
 
     console.log("🚀 Starting Xcode Cloud build...");
     const { id: buildId, number: buildNumber } = await client.createBuild(
       params["xcode-cloud-workflow-id"],
-      referenceId
+      branchReferenceId,
+      prReferenceId
     );
 
     console.log("✅ Build successfully triggered:", {
