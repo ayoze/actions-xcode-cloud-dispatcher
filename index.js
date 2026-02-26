@@ -10,6 +10,12 @@ module.exports = async function trigger(params) {
       }
     }
 
+    if (!params["git-branch-name"] && !params["git-pr-number"]) {
+      throw new Error(
+        "Either 'git-branch-name' or 'git-pr-number' must be provided"
+      );
+    }
+
     const client = new AppStoreConnect(
       BASE_URL,
       params["appstore-connect-token"]
@@ -25,13 +31,23 @@ module.exports = async function trigger(params) {
       owner: workflowInfo.repository.owner,
     });
 
-    console.log(
-      `🔍 Finding git reference for branch '${params["git-branch-name"]}'...`
-    );
-    const referenceId = await client.getGitReference(
-      workflowInfo.repository.id,
-      params["git-branch-name"]
-    );
+    if (params["git-pr-number"]) {
+      console.log(
+        `🔍 Finding git reference for PR #${params["git-pr-number"]}...`
+      );
+      return await client.getGitReferenceForPr(
+        workflowInfo.repository.id,
+        params["git-pr-number"]
+      );
+    } else {
+      console.log(
+        `🔍 Finding git reference for branch '${params["git-branch-name"]}'...`
+      );
+      const referenceId = await client.getGitReferenceForBranchName(
+        workflowInfo.repository.id,
+        params["git-branch-name"]
+      );
+    }
 
     console.log("🚀 Starting Xcode Cloud build...");
     const { id: buildId, number: buildNumber } = await client.createBuild(

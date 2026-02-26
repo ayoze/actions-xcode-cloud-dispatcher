@@ -16,7 +16,10 @@ inputs:
     required: true
   git-branch-name:
     description: "Git branch name"
-    required: true
+    required: false
+  git-pr-number:
+    description: "GitHub Pull Request number"
+    required: false
 
 outputs:
   buildNumber:

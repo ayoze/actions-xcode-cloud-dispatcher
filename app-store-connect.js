@@ -43,7 +43,7 @@ class AppStoreConnect {
     return data;
   }
 
-  async getGitReference(repoId, branchName) {
+  async getGitReferenceForBranchName(repoId, branchName) {
     if (!repoId) throw new Error("Repository ID is required");
     if (!branchName) throw new Error("Branch name is required");
 
@@ -93,6 +93,60 @@ class AppStoreConnect {
 
       throw new Error(
         `No matching git reference found for branch '${branchName}'. Available branches: ${availableBranches.join(
+          ", "
+        )}`
+      );
+    }
+
+    return reference.id;
+  }
+
+
+  async getGitReferenceForPr(repoId, prNumber) {
+    if (!repoId) throw new Error("Repository ID is required");
+    if (!prNumber) throw new Error("Pull Request number is required");
+
+    let allReferences = [];
+    let nextUrl = `/scmRepositories/${repoId}/pullRequests?${new URLSearchParams(
+      {
+        limit: "200",
+      }
+    ).toString()}`;
+
+    while (nextUrl) {
+      const data = await this.request(nextUrl, {
+        errorContext: "Git reference",
+      });
+
+      allReferences = allReferences.concat(data.data);
+
+      // Check if there are more pages
+      if (data.links && data.links.next) {
+        const nextFullUrl = data.links.next;
+        // Extract the path and query parameters from the full URL
+        const url = new URL(nextFullUrl);
+        nextUrl =
+          url.pathname.replace("https://api.appstoreconnect.apple.com/v1", "") +
+          url.search;
+      } else {
+        nextUrl = null;
+      }
+    }
+
+    // Find the matching branch
+    const reference = allReferences.find(
+      (ref) =>
+        !ref?.attributes?.isClosed &&
+        ref.attributes.number === prNumber
+    );
+
+    if (!reference) {
+      const availablePrs = allReferences
+        .map((ref) => ref.attributes.number)
+        .sort();
+
+      throw new Error(
+        `No matching pull request found for PR number '${prNumber}'. Available PRs: ${availablePrs.join(
           ", "
         )}`
       );

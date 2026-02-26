@@ -181,7 +181,8 @@ jobs:
 | ------------------------- | --------------------------- | -------- | -------------------------------------- |
 | `appstore-connect-token`  | App Store Connect API token | Yes      | JWT token                              |
 | `xcode-cloud-workflow-id` | Xcode Cloud workflow ID     | Yes      | "12345678-90ab-cdef-1234-567890abcdef" |
-| `git-branch-name`         | Git branch name             | Yes      | "main"                                 |
+| `git-branch-name`         | Git branch name             | No       | "main"                                 |
+| `git-pr-number`           | Git Pull Request number     | No       |  56                                    |
 
 ### Action Outputs
 
