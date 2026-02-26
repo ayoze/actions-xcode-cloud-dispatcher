@@ -41,6 +41,7 @@ runs:
         APPSTORE_CONNECT_TOKEN: ${{ inputs.appstore-connect-token }}
         XCODE_CLOUD_WORKFLOW_ID: ${{ inputs.xcode-cloud-workflow-id }}
         GIT_BRANCH_NAME: ${{ inputs.git-branch-name }}
+        GIT_PR_NUMBER: ${{ inputs.git-pr-number }}
       with:
         script: |
           const path = require('path');
@@ -51,7 +52,8 @@ runs:
             const result = await trigger({
               "appstore-connect-token": process.env.APPSTORE_CONNECT_TOKEN,
               "xcode-cloud-workflow-id": process.env.XCODE_CLOUD_WORKFLOW_ID,
-              "git-branch-name": process.env.GIT_BRANCH_NAME
+              "git-branch-name": process.env.GIT_BRANCH_NAME,
+              "git-pr-number": process.env.GIT_PR_NUMBER
             });
 
             core.setOutput('buildNumber', result.buildNumber);
